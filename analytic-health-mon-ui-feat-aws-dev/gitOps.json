@@ -1,0 +1,9 @@
+{
+  "gitOps": {
+    "versions": {
+      "proe-fts-ahm-ui" : {
+        "version": "version"
+      }
+    }
+  }
+}

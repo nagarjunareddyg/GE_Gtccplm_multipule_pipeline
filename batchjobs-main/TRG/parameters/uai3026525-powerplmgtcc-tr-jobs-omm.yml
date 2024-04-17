@@ -1,0 +1,10 @@
+UAI: uai3026525
+AppName: powerplmgtcc
+Env: tr
+ImageName: 880379568593.dkr.ecr.us-east-1.amazonaws.com/uai3026525-powerplmgtcc-tr-common:gtccplm
+JobName: omm
+
+ComputeEnvironment:
+  stack_output: uai3026525-powerplmgtcc-tr-jobs-computeenvironment/Compute
+JobRole:
+  stack_output: uai3026525-powerplmgtcc-tr-ecs-iam-batch-job-task/EcsTaskExeRoleArn

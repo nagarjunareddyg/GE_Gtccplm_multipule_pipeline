@@ -1,0 +1,22 @@
+UAI: uai3026525
+AppName: powerplmgtcc
+Env: tr
+ImageName: 880379568593.dkr.ecr.us-east-1.amazonaws.com/uai3026525-powerplmgtcc-tr-common:gtccplm
+JobName: stcldap
+
+ComputeEnvironment:
+  stack_output: uai3026525-powerplmgtcc-tr-jobs-computeenvironment/Compute
+JobRole:
+  stack_output: uai3026525-powerplmgtcc-tr-ecs-iam-batch-job-task/EcsTaskExeRoleArn
+DataEFS:
+  stack_output: uai3026525-powerplmgtcc-tr-efs/DataEFS
+LogEFS:
+  stack_output: uai3026525-powerplmgtcc-tr-efs/LogsEFS
+3DSpaceSecret:
+  stack_output: uai3026525-powerplmgtcc-tr-3dspace-sm/SecretMgr
+BatchSecret:
+  stack_output: uai3026525-powerplmgtcc-tr-batch-sm/SecretMgr
+VCPUValue:
+  stack_output: 4
+MemoryValue:
+  stack_output: 10240

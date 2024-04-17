@@ -1,0 +1,49 @@
+{
+    "containerDefinitions": [
+      {
+        "name": "analytic-health-mon-ui",
+        "image": "598619258634.dkr.ecr.us-east-1.amazonaws.com/uai1008050-plpportal-dev:analytic-health-mon-ui",
+        "cpu": 0,
+        "links": [],
+        "portMappings": [
+          {
+            "containerPort": 9000,
+            "hostPort": 9000,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "entryPoint": ["/start.sh"],
+        "command": [],
+        "environment": [],
+        "secrets": [],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "dnsServers": [],
+        "dnsSearchDomains": [],
+        "extraHosts": [],
+        "dockerSecurityOptions": [],
+        "dockerLabels": {},
+        "ulimits": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "uai1008050/plpportal/dev/analytic-health-mon-ui",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "analytic-health-mon-ui"
+          }
+        }
+      }
+    ],
+    "family": "uai1008050-analytic-health-mon-ui-taskdef-dev",
+    "taskRoleArn": "arn:aws:iam::598619258634:role/app/uai1008050/plpportal-ecs-tasks-proe-ahm-ui-dev",
+    "executionRoleArn": "arn:aws:iam::598619258634:role/app/uai1008050/plpportal-ecs-tasks-proe-ahm-ui-dev",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "cpu": "4096",
+    "memory": "8192"
+  }

@@ -1,0 +1,56 @@
+@import "./../../../../../styles/_mat-element-styles.scss";
+@import "./../../../../../styles/_table-icons.scss";
+@import "./../../../../../styles/_expansion-cell.scss";
+
+
+
+.mat-column-email {
+    flex: 0 0 225px; 
+}
+
+.mat-column-job_DESC {
+    flex: 0 1 310px;
+}
+
+.mat-column-job_NAME {
+    flex: 1 0 180px;
+}
+
+.mat-column-executable {
+    flex: 0 0 450px;
+}
+
+/* Table Icons */
+$icon-margin-left:4px;
+$icon-padding-left:28px;
+
+// Started cell.
+.started_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/right_arrow.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}
+
+.success_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/success24.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}
+.warning_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/warning24.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}
+.failure_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/failure24.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}

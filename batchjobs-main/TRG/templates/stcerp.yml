@@ -1,0 +1,168 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  STCERP processing schedule job
+  
+Parameters:
+  UAI:
+    Type: String
+    Description: The UAI of the application being managed.
+    ConstraintDescription: The UAI must be valid, but specified as 'uai' followed by 7 digits.
+    AllowedPattern: '^uai[0-9]*$'
+    MinLength: 10
+    MaxLength: 10
+    Default: uai3026525
+  Env:
+    Type: String
+    Description: Env instance of the resource.
+    Default: tr
+    AllowedValues:
+    - dev1
+    - tr
+  AppName:
+    Type: String
+    MaxLength: 25
+    MinLength: 3
+    Description: Name of the application, keep to 15 characters or less
+    Default: powerplmgtcc
+  JobName:
+    Type: String
+    Description: stcerp batch job name
+  JobRole:
+    Type: String
+    Description: role required to execute batch
+  ImageName:
+    Type: String
+    Description: CAS image name
+  ComputeEnvironment:
+    Type: String
+    Description: ARN of compute environment
+
+Resources:
+
+  BatchProcessingJobDefinition:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      Type: container
+      PropagateTags: true
+      JobDefinitionName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      ContainerProperties:
+        Image: !Sub ${ImageName}
+        FargatePlatformConfiguration:
+          PlatformVersion: LATEST
+        ResourceRequirements:
+          - Type: VCPU
+            Value: 4
+          - Type: MEMORY
+            Value: 10240
+        JobRoleArn:  !Sub ${JobRole}
+        ExecutionRoleArn:  !Sub ${JobRole}
+        MountPoints:
+          - SourceVolume: jobs-vol
+            ContainerPath: "/opt/software/enovia/stcerp"
+          - SourceVolume: logs-vol
+            ContainerPath: "/opt/shared/log/web/apache/gtccplm/integrations"
+          - SourceVolume: 3dxlogs-vol
+            ContainerPath: /opt/software/R2018x/3DSpace/logs
+          - SourceVolume: "integrationconfig-vol"
+            ContainerPath: "/opt/software/enovia/integration"
+          - SourceVolume: "integrationsdata-vol"
+            ContainerPath: "/opt/shared/data/gtccplm/integrations"
+        Volumes:
+          - Name: jobs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-0ae52c338ae3dc535
+              RootDirectory: !Sub /opt/shared/data/configurations/GTCCPLM/batchjobs/${Env}/stcerp
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: logs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-0e36265c4cbf6ea47
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/jobs
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: 3dxlogs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-0e36265c4cbf6ea47
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/jobs/stcerp
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: integrationconfig-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-0ae52c338ae3dc535
+              RootDirectory: !Sub /opt/shared/data/configurations/GTCCPLM/${Env}/integration
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: integrationsdata-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-0ae52c338ae3dc535
+              RootDirectory: !Sub /opt/shared/data/gtccplm/integrations/${Env}
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+        Secrets:
+          - Name: ENOVIA_USER
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-JAe9VM:Username::"
+          - Name: ENOVIA_KEY
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-JAe9VM:Password::"
+          - Name: ConnectString
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-JAe9VM:ConnectString1521::"
+          - Name: DSLicenseServer
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-JAe9VM:DSLicenseServer::"
+          - Name: TNS_ENTRY
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-JAe9VM:TNS_ENTRY::"
+          - Name: db_login
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/batchjobs-nGmlRn:batchjob_db_login::"
+          - Name: db_password
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/batchjobs-nGmlRn:batchjob_db_password::"
+        LogConfiguration:
+          LogDriver:  awslogs
+          Options:
+            awslogs-group: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+            awslogs-region: us-east-1
+            awslogs-stream-prefix: !Sub ${UAI}-${AppName}-${Env}-batchjob-logs
+        Command:
+        - bash
+        - gtccplm
+        - /opt/software/enovia/stcerp/script/PLM_GTCC_STC_RFQ.sh
+      PlatformCapabilities:
+      - FARGATE
+      Tags:
+        Service: Batch
+        Name: JobDefinitionTag
+        Expected: MergeTag
+
+  BatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      RetentionInDays: 7
+
+  BatchProcessingJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+      - Order: 1
+        ComputeEnvironment:
+          Ref: ComputeEnvironment
+
+Outputs:
+
+  JobDefinition:
+    Description: The Fargate Job Definition
+    Value: !Ref BatchProcessingJobDefinition
+
+  JobQueue:
+    Description: The Fargate Job Queue
+    Value: !Ref BatchProcessingJobQueue
+
+  Compute:
+    Description: The Fargate Compute Environment
+    Value: !Ref ComputeEnvironment

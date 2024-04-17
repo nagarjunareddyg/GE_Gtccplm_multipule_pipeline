@@ -1,0 +1,186 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  MBEWEB processing schedule job
+  
+Parameters:
+  UAI:
+    Type: String
+    Description: The UAI of the application being managed.
+    ConstraintDescription: The UAI must be valid, but specified as 'uai' followed by 7 digits.
+    AllowedPattern: '^uai[0-9]*$'
+    MinLength: 10
+    MaxLength: 10
+    Default: uai3026525
+  Env:
+    Type: String
+    Description: Env instance of the resource.
+    Default: tr
+    AllowedValues:
+    - dev1
+    - tr
+  AppName:
+    Type: String
+    MaxLength: 25
+    MinLength: 3
+    Description: Name of the application, keep to 15 characters or less
+    Default: powerplmgtcc
+  JobName:
+    Type: String
+    Description: mbeweb batch job name
+  JobRole:
+    Type: String
+    Description: role required to execute batch
+  ImageName:
+    Type: String
+    Description: CAS image name
+  ComputeEnvironment:
+    Type: String
+    Description: ARN of compute environment
+  DataEFS:
+    Type: String
+    Description: EFS ID of Data tr
+  LogEFS:
+    Type: String
+    Description: EFS ID of Logs tr
+  VCPUValue:
+    Type: Number
+    Description: Value of VCPU 
+  MemoryValue:
+    Type: Number
+    Description: Value of Memory
+  3DSpaceSecret:
+    Type: String
+    Description: Secrets Manager ARN.
+  BatchSecret:
+    Type: String
+    Description: Secrets Manager ARN
+
+Resources:
+
+  BatchProcessingJobDefinition:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      Type: container
+      PropagateTags: true
+      JobDefinitionName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      ContainerProperties:
+        Image: !Sub ${ImageName}
+        FargatePlatformConfiguration:
+          PlatformVersion: LATEST
+        ResourceRequirements:
+          - Type: VCPU
+            Value: !Sub ${VCPUValue}
+          - Type: MEMORY
+            Value: !Sub ${MemoryValue}
+        JobRoleArn:  !Sub ${JobRole}
+        ExecutionRoleArn:  !Sub ${JobRole}
+        MountPoints:
+          - SourceVolume: jobs-vol
+            ContainerPath: "/opt/software/enovia/mbeweb"
+          - SourceVolume: logs-vol
+            ContainerPath: "/opt/shared/log/web/apache/gtccplm/integrations"
+          - SourceVolume: 3dxlogs-vol
+            ContainerPath: /opt/software/R2018x/3DSpace/logs
+          - SourceVolume: "integrationconfig-vol"
+            ContainerPath: "/opt/software/enovia/integration"
+          - SourceVolume: "integrationsdata-vol"
+            ContainerPath: "/opt/shared/data/gtccplm/integrations"
+        Volumes:
+          - Name: jobs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: !Sub ${DataEFS}
+              RootDirectory: !Sub /opt/shared/data/configurations/GTCCPLM/batchjobs/${Env}/mbeweb
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: logs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: !Sub ${LogEFS}
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/jobs
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: 3dxlogs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: !Sub ${LogEFS}
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/jobs/mbeweb
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: integrationconfig-vol
+            EfsVolumeConfiguration:
+              FileSystemId: !Sub ${DataEFS}
+              RootDirectory: !Sub /opt/shared/data/configurations/GTCCPLM/${Env}/integration
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: integrationsdata-vol
+            EfsVolumeConfiguration:
+              FileSystemId: !Sub ${DataEFS}
+              RootDirectory: !Sub /opt/shared/data/gtccplm/integrations/${Env}
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+        Secrets:
+          - Name: ENOVIA_USER
+            ValueFrom: !Sub "${3DSpaceSecret}:Username::"
+          - Name: ENOVIA_KEY
+            ValueFrom: !Sub "${3DSpaceSecret}:Password::"
+          - Name: ConnectString
+            ValueFrom: !Sub "${3DSpaceSecret}:ConnectString1521::"
+          - Name: DSLicenseServer
+            ValueFrom: !Sub "${3DSpaceSecret}:DSLicenseServer::"
+          - Name: TNS_ENTRY
+            ValueFrom: !Sub "${3DSpaceSecret}:TNS_ENTRY::"
+          - Name: db_login
+            ValueFrom: !Sub "${BatchSecret}:batchjob_db_login::"
+          - Name: db_password
+            ValueFrom: !Sub "${BatchSecret}:batchjob_db_password::"
+        LogConfiguration:
+          LogDriver:  awslogs
+          Options:
+            awslogs-group: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+            awslogs-region: us-east-1
+            awslogs-stream-prefix: !Sub ${UAI}-${AppName}-${Env}-batchjob-logs
+        Command:
+        - bash
+        - gtccplm
+        - /opt/software/enovia/mbeweb/script/GEMBEWEBUSERSYNC.sh
+      PlatformCapabilities:
+      - FARGATE
+      Tags:
+        Service: Batch
+        Name: JobDefinitionTag
+        Expected: MergeTag
+
+  BatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      RetentionInDays: 7
+
+  BatchProcessingJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+      - Order: 1
+        ComputeEnvironment:
+          Ref: ComputeEnvironment
+
+Outputs:
+
+  JobDefinition:
+    Description: The Fargate Job Definition
+    Value: !Ref BatchProcessingJobDefinition
+
+  JobQueue:
+    Description: The Fargate Job Queue
+    Value: !Ref BatchProcessingJobQueue
+
+  Compute:
+    Description: The Fargate Compute Environment
+    Value: !Ref ComputeEnvironment

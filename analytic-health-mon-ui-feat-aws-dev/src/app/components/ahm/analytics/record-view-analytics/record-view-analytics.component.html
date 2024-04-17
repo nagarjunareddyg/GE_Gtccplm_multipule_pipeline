@@ -1,0 +1,715 @@
+<div fxLayout="column" fxLayoutGap="20px" *ngIf="isSelectedJobDefined()" class="record-view-container">
+    <mat-expansion-panel (opened)="jobDetailsPanelState = true"
+    (closed)="jobDetailsPanelState = false" hideToggle="true" [expanded]="true">
+
+                <mat-expansion-panel-header>
+
+                    <mat-panel-title>
+                            <h3 class="page-header mat-panel-arrow-container">
+                            <mat-icon *ngIf="jobDetailsPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_down</mat-icon>
+                            <mat-icon *ngIf="!jobDetailsPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_up</mat-icon>
+                            <span>ANALYTIC DETAILS</span>
+                            </h3>
+                    </mat-panel-title>
+
+                    <div *ngIf="jobDetailsPanelState" class="table-icons-container" (click)="$event.stopPropagation()">
+                            <button mat-button title="Add" *ngIf="isNewJobReadyForAddition()" (click)="submitNewJobInstance()">
+                                    <i class="material-icons table-icon-element">
+                                            add
+                                    </i>
+                            </button>
+                            <button mat-button title="Save" *ngIf="isNewJobReadyForUpdation()" (click)="updateSelectedJob()">
+                                    <i class="material-icons table-icon-element">
+                                            save
+                                    </i>
+                            </button>
+                            <button mat-button title="Refresh" (click)="refreshAll()">
+                                    <i class="material-icons table-icon-element">
+                                            refresh
+                                    </i>
+                            </button>
+
+                            <button mat-button title="Delete" (click)="deleteSelectedJob()">
+                                    <i class="material-icons table-icon-element">
+                                            delete_forever
+                                    </i>
+                            </button>
+                    </div>
+
+            </mat-expansion-panel-header>
+
+            <form [formGroup]="jobFormGroup" autocomplete="off" novalidate>
+                
+                        <div fxLayout="row" fxLayoutAlign="left" *ngIf="!isThisNewJobEmpty()">
+
+                                        <div fxFlex="20%">
+                                                        <mat-form-field>
+                                                                <input formControlName="job_ID" matInput placeholder="Job ID">
+                                                                <mat-error *ngIf="hasError('job_ID', 'required')">job ID is required</mat-error>
+                                                        </mat-form-field>
+                                        </div>
+
+
+                                        <div fxFlex="20%">
+                                                        <mat-form-field>
+                                                                <input formControlName="created_BY" matInput placeholder="*Created By" /> 
+                                                                <mat-error *ngIf="hasError('created_BY', 'required')">SSO is required</mat-error>
+                                                        </mat-form-field>
+                                        </div>
+
+                                        <div fxFlex="20%">
+                                                <mat-form-field>
+                                                        <input formControlName="created_DATE" matInput readonly="true" placeholder="Created Date">
+                                                </mat-form-field>
+
+                                        </div>
+
+                                        <div fxFlex="20%">
+                                                <mat-form-field>
+                                                        <input formControlName="modified_BY" matInput placeholder="Modified By">
+                                                </mat-form-field>
+                                        </div>
+
+
+                                        <div fxFlex="20%">
+                                                <mat-form-field>
+                                                        <input formControlName="modified_DATE" matInput placeholder="Modified Date">
+                                                </mat-form-field>
+                                        </div>
+                        
+                        </div> 
+                        
+                        <div fxLayout="row" fxLayoutAlign="left">
+
+                                        <div fxFlex="20%">
+                                                <mat-form-field>
+                                                        <input formControlName="job_NAME" matInput placeholder="* Job Name" /> 
+                                                        <mat-error *ngIf="hasError('job_NAME', 'required')">Job name is required</mat-error>
+                                                </mat-form-field>
+                                        </div>      
+
+                                        <div fxFlex="20%">
+                                                        <mat-form-field>
+                                                                <mat-label>* Frequency</mat-label>
+                
+                                                                <mat-select formControlName="frequency">
+                                                                        <mat-option *ngFor="let value of interfaceFormatUtilityService.getNumberPicker()" [value]="value">
+                                                                                {{ value }}
+                                                                        </mat-option>
+                                                                </mat-select>
+                                                                <mat-error *ngIf="hasError('frequency', 'required')">Please select a frequency</mat-error>
+                                                        </mat-form-field>
+                                        </div>
+
+                                        <div fxFlex="20%">
+
+                                                        <mat-form-field>
+                                                                <mat-label>* Digest Frequency UOM</mat-label>
+                                                                <mat-select formControlName="frequency_UOM">
+                                                                        <mat-option *ngFor="let value of interfaceFormatUtilityService.getDigestFrequencyUOMValues()" [value]="value">
+                                                                                {{ interfaceFormatUtilityService.formatFrequencyUOM(value) }}
+                                                                        </mat-option>
+                                                                </mat-select>
+                                                                <mat-error *ngIf="hasError('frequency_UOM', 'required')">Please select a digest freq UOM</mat-error>
+                                                        </mat-form-field>
+                                        </div>    
+
+                                        <div fxFlex="20%">
+
+                                                       <!-- <mat-form-field>
+                                                                <mat-label>* Log Max Age (Days)</mat-label>
+                                                                <mat-select formControlName="log_MAX_AGE">
+                                                                        <mat-option *ngFor="let value of interfaceFormatUtilityService.getNumberPicker()" [value]="value">
+                                                                                {{ value }}
+                                                                        </mat-option>
+                                                                </mat-select>
+                                                                <mat-error *ngIf="hasError('log_MAX_AGE', 'required')">Please select a log max age</mat-error>
+                                                        </mat-form-field> -->
+                                                        <mat-form-field>
+                                                                <input formControlName="log_MAX_AGE" matInput placeholder="* Log Max Age (Days)" /> 
+                                                                     <mat-error *ngIf="hasError('log_MAX_AGE', 'required')">log MAX AGE is required</mat-error>
+                                                             </mat-form-field>
+                                        </div>
+        
+                                        <div fxFlex="20%">
+                                                       <!-- <mat-form-field>
+                                                                <mat-label>* Log Min Count</mat-label>
+                                                                <mat-select formControlName="log_MIN_COUNT">
+                                                                        <mat-option *ngFor="let value of interfaceFormatUtilityService.getNumberPicker()" [value]="value">
+                                                                                {{ value }}
+                                                                        </mat-option>
+                                                                </mat-select>
+                                                                <mat-error *ngIf="hasError('log_MIN_COUNT', 'required')">Please select a minimum log count</mat-error>
+                                                        </mat-form-field> -->
+                                                        <mat-form-field>
+                                                                <input formControlName="log_MIN_COUNT" matInput placeholder="* Log Min Count" /> 
+                                                                     <mat-error *ngIf="hasError('log_MIN_COUNT', 'required')">log MIN AGE is required</mat-error>
+                                                             </mat-form-field>
+                                        </div>
+                                        
+
+                        </div>
+
+                        <div fxLayout="row" fxLayoutAlign="left">
+
+                                <div fxFlex="20%">
+                                                <mat-form-field>
+                                                        <input formControlName="run_AS" matInput placeholder="* Run As">
+                                                        <mat-error *ngIf="hasError('run_AS', 'required')">Please provide the requried information(Run As) </mat-error>
+                                                        <mat-error *ngIf="hasError('run_AS', 'pattern')">Invalid Value</mat-error>
+                                                </mat-form-field>
+                                </div>
+
+
+                                <div fxFlex="20%">
+                                               
+                                                <mat-form-field>
+                                                                <input matInput placeholder="Next Run:" formControlName="next_RUN"
+                                                                [owlDateTime]="dt3" [owlDateTimeTrigger]="dt3" style="cursor: pointer;">
+                                                                <owl-date-time [pickerType]="'both'" [pickerMode]="'dialog'" #dt3></owl-date-time>
+                                                </mat-form-field>
+                                </div>
+
+                                <div fxFlex="20%">
+
+                                                <mat-form-field>
+                                                        <mat-label>Digest Run Day</mat-label>
+                                                        <mat-select formControlName="run_DAY">
+                                                                <mat-option *ngFor="let day of interfaceFormatUtilityService.getDigestRunDays()" [value]="day">
+                                                                        {{ day }}
+                                                                </mat-option>
+                                                        </mat-select>
+                                                </mat-form-field>
+                                </div>
+
+                                <div fxFlex="20%">
+
+                                               <!-- <mat-form-field>
+                                                        <mat-label>Run Order</mat-label>
+                                                        <mat-select formControlName="run_ORDER">
+                                                                <mat-option *ngFor="let day of interfaceFormatUtilityService.getNumberPicker()" [value]="day">
+                                                                        {{ day }}
+                                                                </mat-option>
+                                                        </mat-select>
+                                                </mat-form-field> -->
+                                                <mat-form-field>
+                                                        <input formControlName="run_ORDER" matInput placeholder="* Run Order" />
+                                                     </mat-form-field>
+                                </div>
+                                
+                                <div fxFlex="20%">
+                                              <!--  <mat-form-field>
+                                                        <mat-label>* Queue ID</mat-label>
+                
+                                                        <mat-select formControlName="queue_ID">
+                                                                <mat-option *ngFor="let value of interfaceFormatUtilityService.getNumberPicker()" [value]="value">
+                                                                        {{ value }}
+                                                                </mat-option>
+                                                        </mat-select>
+                                                        <mat-error *ngIf="hasError('queue_ID', 'required')">Please select a queue ID</mat-error>
+                                                </mat-form-field> -->
+                                                <mat-form-field>
+                                                        <input formControlName="queue_ID" matInput placeholder="* Queue ID" /> 
+                                                             <mat-error *ngIf="hasError('queue_ID', 'required')">queue IDis required</mat-error>
+                                                     </mat-form-field>
+
+                                </div>
+                                                                                        
+                        </div>
+
+                        <div fxLayout="row" fxLayoutAlign="left">
+
+                                        <div fxFlex="20%">
+
+                                                        <mat-form-field>
+                                                                        <mat-label>* Execution Type</mat-label>
+        
+                                                                        <mat-select formControlName="exec_TYPE">
+                                                                                <mat-option *ngFor="let value of interfaceFormatUtilityService.getExecutionTypes()" [value]="value">
+                                                                                        {{ interfaceFormatUtilityService.formatExecutionTypeStringToFrontend(value) }}
+                                                                                </mat-option>
+                                                                        </mat-select>
+                                                                        <mat-error *ngIf="hasError('exec_TYPE', 'required')">Please select a execution type</mat-error>
+                                                        </mat-form-field> 
+                                        </div>
+
+                                        <div fxFlex="20%">
+                                                        <mat-form-field>
+                                                                <input matInput formControlName="last_max_START_DATE" readonly="true" placeholder="Last Run Start Date">
+                                                        </mat-form-field>
+                                        </div>
+
+                                        <div fxFlex="20%">
+                                                <mat-form-field>
+                                                        <input matInput readonly="true" formControlName="last_RUN_END_STATUS" placeholder="Last Run Status">
+                                                </mat-form-field>
+                                        </div>
+
+
+                                        <div fxFlex="20%" class="mat-checkbox-flex-container">
+                                                <mat-label>Out Of Service Flag: &nbsp;&nbsp;</mat-label>
+                                                <mat-checkbox formControlName="oos_FLAG"></mat-checkbox>
+                                        </div>  
+
+                                        <div fxFlex="20%" class="mat-checkbox-flex-container">
+                                                        
+                                                <mat-label>Job Running Flag: &nbsp;&nbsp;</mat-label>
+                                                <mat-checkbox formControlName="running_FLAG"></mat-checkbox>
+                                
+                                        </div>
+                                        
+                                        
+
+                        </div>
+
+                        <div fxLayout="row" fxLayoutAlign="left">
+
+                                <div fxFlex="50%">
+                                        <mat-form-field class="last-level-formfield">
+                                                <textarea formControlName="job_DESC" matInput placeholder="* Job Description" class="job-description-textarea"></textarea>
+                                                <mat-error *ngIf="hasError('job_DESC', 'required')">Job description is required</mat-error>
+                                        </mat-form-field>
+                                </div>
+
+                                <!-- executable code -->
+                                <div fxFlex="50%">
+                                        <mat-form-field class="last-level-formfield">
+                                                <textarea formControlName="executable" matInput placeholder="* Executable" class="executable-textarea"></textarea>
+                                                <mat-error *ngIf="hasError('executable', 'required')">Executable is required</mat-error>
+                                        </mat-form-field>
+                                </div>
+                        </div>
+
+                </form>
+        
+    </mat-expansion-panel>
+</div>
+
+
+<div fxLayout="column" fxLayoutGap="20px" class="record-view-container">
+        <mat-expansion-panel (opened)="jobParametersPanelState = true"
+                (closed)="jobParametersPanelState = false" hideToggle="true">
+                
+                        <mat-expansion-panel-header>
+
+                                <mat-panel-title>
+                                        <h3 class="page-header mat-panel-arrow-container">
+                                        <mat-icon *ngIf="jobParametersPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_down</mat-icon>
+                                        <mat-icon *ngIf="!jobParametersPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_up</mat-icon>
+                                        <span>PARAMETERS</span>
+                                        </h3>
+                                </mat-panel-title>
+            
+                                <div *ngIf="jobParametersPanelState && !isSelectedJobNew" class="table-icons-container" (click)="$event.stopPropagation()">
+                                                <button mat-button title="Edit" *ngIf="isJobParameterSelected()" (click)="editJobParameterObjectForJob()">
+                                                                <i class="material-icons table-icon-element">
+                                                                        edit
+                                                                </i>
+                                                </button>
+                
+                                                <button mat-button title="Refresh" (click)="refreshParametersList()">
+                                                                <i class="material-icons table-icon-element">
+                                                                        refresh
+                                                                </i>
+                                                </button>
+                                    
+                                                <button mat-button title="Delete" *ngIf="isJobParameterSelected()" (click)="deleteJobParameterObjectForJob()">
+                                                                <i class="material-icons table-icon-element">
+                                                                        delete_forever
+                                                                </i>
+                                                </button>
+                
+                                                <button mat-button title="Add" (click)="createJobParameterObjectForJob()">
+                                                                <i class="material-icons table-icon-element">
+                                                                        add
+                                                                </i>
+                                                </button>
+                                </div>
+            
+                        </mat-expansion-panel-header>
+
+
+                        <div *ngIf="!isJobParametersTableDefined()">
+                                <h1 align="center">Loading...</h1>
+                                <mat-spinner></mat-spinner>
+                        </div>
+
+                         <!-- Scrollable table within panel -->
+                        <div *ngIf="isJobParametersTableDefined() && doesJobParametersTableHaveData()" class="table_container">
+
+                                <mat-form-field class="mat-filter">
+          
+                                        <input matInput (keyup)="applyMatFilter(jobParametersList, $event.target.value)" placeholder="Search">
+                            
+                                        <!-- Add mat button for search icon -->
+                                        <button mat-button matPrefix mat-icon-button>
+                                                <i class="material-icons">
+                                                        search
+                                                </i>
+                                        </button>
+                                                      
+                                </mat-form-field>
+                            
+                                <mat-table #table [dataSource]="jobParametersList" class="mat-elevation-z8" style="width: 100%;">
+            
+                                        <!-- Checkbox Column -->
+                                        <ng-container matColumnDef="select">
+                                                <mat-header-cell *matHeaderCellDef class="expansion-cell-width"></mat-header-cell>
+                                                <mat-cell class="expansion-cell-width" *matCellDef="let row" style="width: 20px !important;">
+                                                    <mat-checkbox (click)="$event.stopPropagation()"
+                                                                    (change)="$event ? selectedParameterInstance.toggle(row) : null"
+                                                                    [checked]="selectedParameterInstance.isSelected(row)">
+                                                    </mat-checkbox>
+                                                </mat-cell>
+                                        </ng-container>
+                                        <!--- Note that these columns can be defined in any order.
+                                            The actual rendered columns are set as a property on the row definition" -->
+                                    
+                                        <!-- param_SEQ -->
+                                        <ng-container matColumnDef="param_SEQ">
+                                            <mat-header-cell *matHeaderCellDef style="width: 100%;"><b> Sequence </b></mat-header-cell>
+                                            <mat-cell *matCellDef="let element" style="width: 100%; height: 40px !important;"> 
+                                                {{  element.param_SEQ }}
+                                            </mat-cell>
+                                        </ng-container>
+            
+                                        <!-- param_NAME -->
+                                        <ng-container matColumnDef="param_NAME">
+                                            <mat-header-cell *matHeaderCellDef style="width: 100%;"><b> Name </b></mat-header-cell>
+                                            <mat-cell *matCellDef="let element" style="width: 100%;"> 
+                                                    {{  element.param_NAME }}
+                                            </mat-cell>
+                                        </ng-container>
+            
+                                        <!-- param_TYPE -->
+                                        <ng-container matColumnDef="param_TYPE">
+                                                <mat-header-cell *matHeaderCellDef><b> Type </b></mat-header-cell>
+                                                <mat-cell *matCellDef="let element">
+                                                        {{ element.param_TYPE }}
+                                                </mat-cell>
+                                        </ng-container>
+
+                                        <!-- param_VALUE -->
+                                        <ng-container matColumnDef="param_VALUE">
+                                                        <mat-header-cell *matHeaderCellDef><b> Value </b></mat-header-cell>
+                                                        <mat-cell *matCellDef="let element" style="overflow: auto !important;">
+                                                              {{ element.param_VALUE }}
+                                                        </mat-cell>
+                                        </ng-container>
+                                        
+            
+                                        <mat-header-row *matHeaderRowDef="jobParameterTableColumns"></mat-header-row>
+                                        <mat-row *matRowDef="let row; columns: jobParameterTableColumns;"></mat-row>
+                                </mat-table>
+                        </div>   
+                        <div *ngIf="isJobParametersTableDefined() && !doesJobParametersTableHaveData() && !isSelectedJobNew">
+                                <h2 align="center">Please select '+' to begin adding a job parameters for {{ selectedJob.job_NAME }} </h2>    
+                        </div> 
+                        <div *ngIf="isJobParametersTableDefined() && !doesJobParametersTableHaveData() && isSelectedJobNew">
+                                <h2 align="center">Please finish adding job to view parameters.. </h2>    
+                        </div>
+        </mat-expansion-panel>
+</div>
+
+<div fxLayout="column" fxLayoutGap="20px" class="record-view-container">
+        <mat-expansion-panel (opened)="jobSubscribersPanelState = true"
+                (closed)="jobSubscribersPanelState = false" hideToggle="true">
+                
+                        <mat-expansion-panel-header>
+
+                                <mat-panel-title>
+                                        <h3 class="page-header mat-panel-arrow-container">
+                                        <mat-icon *ngIf="jobSubscribersPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_down</mat-icon>
+                                        <mat-icon *ngIf="!jobSubscribersPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_up</mat-icon>
+                                        <span>SUBSCRIBERS</span>
+                                        </h3>
+                                </mat-panel-title>
+            
+                                <div *ngIf="jobSubscribersPanelState && !isSelectedJobNew" class="table-icons-container" (click)="$event.stopPropagation()">
+                                        <button mat-button title="Edit" *ngIf="isJobSubscriptionSelected()" (click)="updateJobSubscriptionObjectForJob()">
+                                                <i class="material-icons table-icon-element">
+                                                        edit
+                                                </i>
+                                        </button>
+
+                                        <button mat-button title="Refresh" (click)="refreshSubscribersList()">
+                                                <i class="material-icons table-icon-element">
+                                                        refresh
+                                                </i>
+                                        </button>
+                    
+                                        <button mat-button title="Delete" *ngIf="isJobSubscriptionSelected()" (click)="deleteJobSubscriptionObjectForJob()">
+                                                <i class="material-icons table-icon-element">
+                                                        delete_forever
+                                                </i>
+                                        </button>
+
+                                        <button mat-button title="Add" (click)="createJobSubscriptionObjectForJob()">
+                                                <i class="material-icons table-icon-element">
+                                                        add
+                                                </i>
+                                        </button>
+                        
+                                </div>
+            
+                        </mat-expansion-panel-header>
+
+
+                        <div *ngIf="!isJobSubscriptionsTableDefined()">
+                                <h1 align="center">Loading...</h1>
+                                <mat-spinner></mat-spinner>
+                        </div>
+
+                         <!-- Scrollable table within panel -->
+                        <div *ngIf="isJobSubscriptionsTableDefined() && doesJobSubscriptionsTableHaveData()" class="table_container">
+
+                                <mat-form-field class="mat-filter">
+          
+                                        <input matInput (keyup)="applyMatFilter(jobSubscriptionsList, $event.target.value)" placeholder="Search">
+                            
+                                        <!-- Add mat button for search icon -->
+                                        <button mat-button matPrefix mat-icon-button>
+                                                <i class="material-icons">
+                                                        search
+                                                </i>
+                                        </button>
+                                                      
+                                </mat-form-field>
+                            
+                                <mat-table #table [dataSource]="jobSubscriptionsList" class="mat-elevation-z8" style="width: 100%;">
+            
+                                        <!-- Checkbox Column -->
+                                        <ng-container matColumnDef="select">
+                                                <mat-header-cell *matHeaderCellDef class="expansion-cell-width"></mat-header-cell>
+                                                <mat-cell class="expansion-cell-width" *matCellDef="let row" style="width: 20px !important;">
+                                                    <mat-checkbox (click)="$event.stopPropagation()"
+                                                                    (change)="$event ? selectedJobSubscriptionInstance.toggle(row) : null"
+                                                                    [checked]="selectedJobSubscriptionInstance.isSelected(row)">
+                                                    </mat-checkbox>
+                                                </mat-cell>
+                                        </ng-container>
+                                        <!--- Note that these columns can be defined in any order.
+                                            The actual rendered columns are set as a property on the row definition" -->
+                                    
+                                        <!-- notification_type -->
+                                        <ng-container matColumnDef="notification_type">
+                                                <mat-header-cell *matHeaderCellDef style="width: 100%;"><b> Notification Type </b></mat-header-cell>
+                                                <mat-cell *matCellDef="let element" style="width: 100%;"> 
+                                                        {{  convertNotificationTypeString(element.notification_TYPE) }}
+                                                </mat-cell>
+                                        </ng-container>
+
+                                        <!-- subscriber_ID -->
+                                        <ng-container matColumnDef="subscriber_ID">
+                                                        <mat-header-cell *matHeaderCellDef style="width: 100%;"><b> Subscriber ID </b></mat-header-cell>
+                                                        <mat-cell *matCellDef="let element" style="width: 100%; height: 40px !important;">
+                                                                <div class="reRoutingLink"  [routerLink]="['/subscription']" (click)="selectSubscriberOnClick(  element.subscriber_ID   )" > 
+                                                                        {{  element.subscriber_ID.subscriber_ID }}
+                                                                </div>
+                                                        </mat-cell>
+                                        </ng-container>
+
+                                        <!-- email -->
+                                        <ng-container matColumnDef="email">
+                                                        <mat-header-cell *matHeaderCellDef style="width: 100%;"><b> Email </b></mat-header-cell>
+                                                        <mat-cell *matCellDef="let element" style="width: 100%;"> 
+                                                                {{  element.subscriber_ID.email }}
+                                                        </mat-cell>
+                                        </ng-container>
+
+                                        <!-- OOS flag for subscription object -->
+                                        <ng-container matColumnDef="subscriptionActive">
+                                                <mat-header-cell *matHeaderCellDef><b> Notifcation Active </b></mat-header-cell>
+                                                <mat-cell *matCellDef="let element">
+                                                <div class="{{ setTableElementIconStatus('-:yes,+:no',element.oos_FLAG) }}"> {{ setTableElementTextStatus('-:yes,+:no', element.oos_FLAG) }} </div>
+                                                </mat-cell>
+                                        </ng-container>
+                                        
+            
+                                        <mat-header-row *matHeaderRowDef="jobSubscriberTableColumns"></mat-header-row>
+                                        <mat-row *matRowDef="let row; columns: jobSubscriberTableColumns;"></mat-row>
+                                </mat-table>
+                        </div>   
+                        <div *ngIf="isJobSubscriptionsTableDefined() && !doesJobSubscriptionsTableHaveData() && !isSelectedJobNew">
+                                <h2 align="center">Please select '+' to begin adding a job subscribers for {{ selectedJob.job_NAME }} </h2>    
+                        </div> 
+
+                        <div *ngIf="isJobSubscriptionsTableDefined() && !doesJobSubscriptionsTableHaveData() && isSelectedJobNew">
+                                <h2 align="center">Please finish adding job to view subscribers.. </h2>    
+                        </div>
+        </mat-expansion-panel>
+</div>
+
+<div fxLayout="column" fxLayoutGap="20px" class="record-view-container">
+        <mat-expansion-panel (opened)="jobHistoryPanelState = true"
+                (closed)="jobHistoryPanelState = false" hideToggle="true">
+                
+                        <mat-expansion-panel-header>
+
+                                <mat-panel-title>
+                                        <h3 class="page-header mat-panel-arrow-container">
+                                        <mat-icon *ngIf="jobHistoryPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_down</mat-icon>
+                                        <mat-icon *ngIf="!jobHistoryPanelState" [inline]="true" class="mat-extension-panel-arrow">keyboard_arrow_up</mat-icon>
+                                        <span>HISTORY</span>
+                                        </h3>
+                                </mat-panel-title>
+            
+                                <div *ngIf="jobHistoryPanelState && !isSelectedJobNew" class="table-icons-container" (click)="$event.stopPropagation()">
+                                
+                                        <button mat-button title="Refresh" (click)="refreshHistoryList()">
+                                                <i class="material-icons table-icon-element">
+                                                        refresh
+                                                </i>
+                                        </button>
+            
+                                </div>
+            
+                        </mat-expansion-panel-header>
+
+
+                        <div *ngIf="!isJobHistoryTableDefined()">
+                                <h1 align="center">Loading...</h1>
+                                <mat-spinner></mat-spinner>
+                        </div>
+
+                         <!-- Scrollable table within panel -->
+                        <div *ngIf="isJobHistoryTableDefined() && doesJobHistoryTableHaveData()" class="table_container">
+
+                                <mat-form-field class="mat-filter">
+          
+                                        <input matInput (keyup)="applyMatFilter(jobHistoryList, $event.target.value)" placeholder="Search">
+                            
+                                        <!-- Add mat button for search icon -->
+                                        <button mat-button matPrefix mat-icon-button>
+                                                <i class="material-icons">
+                                                        search
+                                                </i>
+                                        </button>
+                                                      
+                                </mat-form-field>
+                            
+                                <mat-table #table [dataSource]="jobHistoryList" class="mat-elevation-z8" matSort matSortActive="log_ID" matSortDirection="desc" style="width: 100%;">
+                                    
+                                        <!-- log_ID -->
+                                        <ng-container matColumnDef="log_ID">
+                                            <mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100%;"><b> Log ID </b></mat-header-cell>
+                                            <mat-cell *matCellDef="let element" style="width: 100%; height: 40px !important;"> 
+                                                {{  element.log_ID }}
+                                            </mat-cell>
+                                        </ng-container>
+
+                                        <!-- start_DATE -->
+                                        <ng-container matColumnDef="start_DATE">
+                                                <mat-header-cell *matHeaderCellDef mat-sort-header><b> Start Date </b></mat-header-cell>
+                                                <mat-cell *matCellDef="let element">
+                                                                {{ element.start_DATE | date:'yyyy-MM-dd HH:mm:ss' }}
+                                                        <!-- {{ element.start_DATE | date:'MM/dd/yyyy' }}  -->
+                                                        <!-- {{ element.start_DATE | date:'HH:mm' }} -->
+                                                </mat-cell>
+                                        </ng-container>
+
+                                        <!-- end_DATE -->
+                                        <ng-container matColumnDef="end_DATE">
+                                                        <mat-header-cell *matHeaderCellDef mat-sort-header><b> End Date </b></mat-header-cell>
+                                                        <mat-cell *matCellDef="let element">
+                                                                <!-- {{ element.end_DATE | date:'MM/dd/yyyy' }} {{ element.end_DATE | date:'HH:mm' }} -->
+                                                                {{ element.end_DATE | date:'yyyy-MM-dd HH:mm:ss' }}
+                                                        </mat-cell>
+                                        </ng-container>
+
+                                        <!-- duration -->
+                                        <ng-container matColumnDef="duration">
+                                                <mat-header-cell *matHeaderCellDef mat-sort-header><b> Duration <br> (seconds) </b></mat-header-cell>
+                                                <mat-cell *matCellDef="let element">
+                                                        {{ element.job_DURATION }}
+                                                </mat-cell>
+                                        </ng-container>
+            
+                                        <!-- status -->
+                                        <ng-container matColumnDef="status">
+                                            <mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100%;"><b> Status </b></mat-header-cell>
+                                            <mat-cell *matCellDef="let element" style="width: 100%;"> 
+                                                    <div class="{{ setTableElementIconStatus('SUCCESS,FAIL,WARN', element.status) }}"> &nbsp; </div>
+                                            </mat-cell>
+                                        </ng-container>
+
+                                        <!-- Messages -->
+                                        <ng-container matColumnDef="messages">
+                                                <mat-header-cell *matHeaderCellDef mat-sort-header><b> Messages </b></mat-header-cell>
+                                                <mat-cell *matCellDef="let element">
+
+                                                        <a style="cursor: pointer; text-decoration: none;" *ngIf="element.message.length > 0">
+                                                            Click to view messages
+                                                        </a>
+
+                                                </mat-cell>
+                                        </ng-container>
+                                        
+            
+                                        <mat-header-row *matHeaderRowDef="jobHistoryTableColumns"></mat-header-row>
+                                        <mat-row *matRowDef="let row; columns: jobHistoryTableColumns;" style="cursor: pointer !important;" matRipple [cdkDetailRow]="row" [cdkDetailRowTpl]="tpl"></mat-row>
+                                </mat-table>
+
+                                <mat-paginator [pageSizeOptions]="[5, 10, 15, 20, 40, 100]"></mat-paginator>
+
+                                <!-- Health Instance level of table -->
+                                <ng-template #tpl let-element>
+
+                        
+                                        <div class="mat-row detail-row firstLevelTableStyle" *ngIf="element.message.length > 0" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                                
+                                                <mat-table #table [dataSource]="element.message" class="mat-elevation-z8">
+                                                        
+                                        
+                                                        <!-- Status Column -->
+                                                        <ng-container matColumnDef="nested-status">
+                                                                <mat-header-cell *matHeaderCellDef><b> Status </b></mat-header-cell>
+                                                                <mat-cell *matCellDef="let element">
+
+                                                                        <!-- remove text printing status, just want icon - as per piotr's request  -->
+                                                                        <div class="{{ setTableElementIconStatus('SUCCESS,FAIL,WARN', element.status) }}"> &nbsp; </div>
+                                                                </mat-cell>
+                                                        </ng-container>
+                                                        <!-- created_DATE Column -->
+                                                        <ng-container matColumnDef="nested_created_DATE">
+                                                        <mat-header-cell *matHeaderCellDef><b> Created Date </b></mat-header-cell>
+
+                                                                <!-- remove break in date, as per piotr's request -->
+                                                                <mat-cell *matCellDef="let element"> 
+                                                                                {{element.created_DATE | date: 'yyyy-MM-dd HH:mm:ss'}}
+                                                                                <!-- {{element.created_DATE | date: 'HH:mm:ss'}} -->
+                                                                </mat-cell>
+                                                        </ng-container>
+                                        
+                                                        <!-- Message Column -->
+                                                        <ng-container matColumnDef="nested_message">
+                                                        <mat-header-cell *matHeaderCellDef><b> Message </b></mat-header-cell>
+                                                        <mat-cell *matCellDef="let element">
+                                                                <div readonly="true" [ngStyle]="{'color': setTableElementTextStatus('SUCCESS,FAIL,WARN', element.status) }" style="border: none; white-space: pre-wrap;
+                                                                 width: 100%; font-family: monospace; font-size: 12px;">{{ element.message }}</div>
+                                                        </mat-cell>
+                                                        </ng-container>
+                                        
+                                                        <mat-header-row *matHeaderRowDef="jobHistoryMessageTableColumns"></mat-header-row>
+                                                        <mat-row style="cursor:pointer;" *matRowDef="let row; columns: jobHistoryMessageTableColumns;"></mat-row>
+                                        
+                                                </mat-table>
+                                        </div>
+                                        <p *ngIf="element.message.length == 0" style="text-align: center;">
+                                                No messages found for this log instance
+                                        </p>
+                                </ng-template>
+
+                        </div>  
+
+                        <!-- Display if job history panel is currently being edited -->
+                        <div *ngIf="isJobHistoryTableDefined() && !doesJobHistoryTableHaveData() && !isSelectedJobNew" class="table_container">   
+                                <h2 align="center"> No history records found for job {{ selectedJob.job_NAME }} </h2>    
+                        </div>
+
+                        <div *ngIf="isJobHistoryTableDefined() && !doesJobHistoryTableHaveData() && isSelectedJobNew">
+                                <h2 align="center">Please finish adding job to view history log.. </h2>    
+                        </div>
+                        
+        </mat-expansion-panel>
+</div>

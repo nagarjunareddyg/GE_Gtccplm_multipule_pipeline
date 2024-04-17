@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+    
+    environment {
+        branch = "${env.Environment}"
+    }
+    
+    stages {
+        stage('Build Stackmaster') {
+            steps {
+                script {
+                    sh " chmod 777 ./deployPlatform.sh "
+                    sh " ./deployPlatform.sh ${env.Environment} "
+                    
+                }
+            }
+        }
+    } //stages
+   
+    
+    post {
+            always {
+                script {
+                         echo 'Always Clean Workspace'
+                        cleanWs()
+                }
+            }
+     }
+} //pipeline

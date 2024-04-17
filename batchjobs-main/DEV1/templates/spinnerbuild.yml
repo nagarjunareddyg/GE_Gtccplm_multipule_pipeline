@@ -1,0 +1,165 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  UCO processing schedule job
+  
+Parameters:
+  UAI:
+    Type: String
+    Description: The UAI of the application being managed.
+    ConstraintDescription: The UAI must be valid, but specified as 'uai' followed by 7 digits.
+    AllowedPattern: '^uai[0-9]*$'
+    MinLength: 10
+    MaxLength: 10
+    Default: uai3026525
+  Env:
+    Type: String
+    Description: Env instance of the resource.
+    Default: dev1
+    AllowedValues:
+    - dev1
+    - tr
+  AppName:
+    Type: String
+    MaxLength: 25
+    MinLength: 3
+    Description: Name of the application, keep to 15 characters or less
+    Default: powerplmgtcc
+  JobName:
+    Type: String
+    Description: batch job name
+  JobRole:
+    Type: String
+    Description: role required to execute batch
+  ImageName:
+    Type: String
+    Description: CAS image name
+  ScheduleJobSG:
+    Type: String
+    Description: security group for schedule jobs
+  CommonContainerSG:
+    Type: String
+    Description: common security group for db connection
+
+Resources:
+
+  BatchProcessingJobDefinition:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      Type: container
+      PropagateTags: true
+      JobDefinitionName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      ContainerProperties:
+        Image:  '880379568593.dkr.ecr.us-east-1.amazonaws.com/uai3026525-powerplmgtcc-tr-common:gtccplm'
+        FargatePlatformConfiguration:
+          PlatformVersion: LATEST
+        ResourceRequirements:
+          - Type: VCPU
+            Value: 4
+          - Type: MEMORY
+            Value: 10240
+        JobRoleArn:  !Sub ${JobRole}
+        ExecutionRoleArn:  !Sub ${JobRole}
+        MountPoints:
+          - SourceVolume: jobs-vol
+            ContainerPath: $Sub "/opt/software/enovia/spinners"
+          - SourceVolume: logs-vol
+            ContainerPath: "/opt/shared/log/web/apache/gtccplm/logs"
+          - SourceVolume: 3dxlogs-vol
+            ContainerPath: /opt/software/R2018x/3DSpace/logs
+        Volumes:
+          - Name: jobs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-069542faa056b9ecb
+              RootDirectory: !Sub /opt/shared/data/configurations/GTCCPLM/batchjobs/${Env}/spinners
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: logs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-062a387e14c4c5624
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/spinners
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: 3dxlogs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-062a387e14c4c5624
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/spinners/3dxlogs
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+        Secrets:
+          - Name: ENOVIA_USER
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:Username::"
+          - Name: ENOVIA_KEY
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:Password::"
+          - Name: ConnectString
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:ConnectString1521::"
+          - Name: DSLicenseServer
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:DSLicenseServer::"
+          - Name: TNS_ENTRY
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:TNS_ENTRY::"
+          - Name: db_login
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/batchjobs-tgm7c9:batchjob_db_login::"
+          - Name: db_password
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/batchjobs-tgm7c9:batchjob_db_password::"
+        LogConfiguration:
+          LogDriver:  awslogs
+          Options:
+            awslogs-group: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+            awslogs-region: us-east-1
+            awslogs-stream-prefix: !Sub ${UAI}-${AppName}-${Env}-batchjob-logs
+        Command:
+        - bash
+        - gtccplm
+        - /opt/software/enovia/spinners/script.sh
+      PlatformCapabilities:
+      - FARGATE
+      Tags:
+        Service: Batch
+        Name: JobDefinitionTag
+        Expected: MergeTag
+
+  BatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      RetentionInDays: 7
+
+  BatchProcessingJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+      - Order: 1
+        ComputeEnvironment:
+          Ref: ComputeEnvironment
+  ComputeEnvironment:
+    Type: AWS::Batch::ComputeEnvironment
+    Properties:
+      ComputeEnvironmentName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      Type: MANAGED
+      State: ENABLED
+      ComputeResources:
+        Type: FARGATE
+        MaxvCpus: 6
+        Subnets: [!ImportValue rb-az1, !ImportValue rb-az2]
+        SecurityGroupIds:  [!Ref ScheduleJobSG, !Ref CommonContainerSG]
+      ServiceRole: "arn:aws:iam::880379568593:role/app/uai3026525/powerplmgtcc-Service-Role-for-Batch"
+
+Outputs:
+
+  JobDefinition:
+    Description: The Fargate Job Definition
+    Value: !Ref BatchProcessingJobDefinition
+
+  JobQueue:
+    Description: The Fargate Job Queue
+    Value: !Ref BatchProcessingJobQueue
+
+  Compute:
+    Description: The Fargate Compute Environment
+    Value: !Ref ComputeEnvironment

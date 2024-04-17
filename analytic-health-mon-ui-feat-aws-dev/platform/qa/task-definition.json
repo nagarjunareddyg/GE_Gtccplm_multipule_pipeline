@@ -1,0 +1,73 @@
+{
+    "containerDefinitions": [
+      {
+        "name": "outage_planning_service",
+        "image": "598619258634.dkr.ecr.us-east-1.amazonaws.com/uai2005370-dpp-internal-qa:outage_planning_service",
+        "cpu": 0,
+        "links": [],
+        "portMappings": [
+          {
+            "containerPort": 8191,
+            "hostPort": 8191,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "entryPoint": ["/start.sh"],
+        "command": [],
+        "environment": [
+          {
+            "name":"dpp-internal_RDS_PORT",
+            "value":""
+          },
+          {
+            "name":"dpp-internal_RDS_DBNAME",
+            "value":""
+          }
+		  
+        ],
+        "secrets": [ 
+		{
+			"name": "DPP_DB_URL",
+			"valueFrom": "arn:aws:secretsmanager:us-east-1:598619258634:secret:uai2005370-dpp-internal-dev-db-SHpN88:DPP_DB_URL::"
+		},
+          {
+            "name": "DPP_DB_USERNAME",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:598619258634:secret:uai2005370-dpp-internal-dev-db-SHpN88:DPP_DB_USERNAME::"
+          },
+          {
+            "name": "DPP_DB_KEYWORD",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:598619258634:secret:uai2005370-dpp-internal-dev-db-SHpN88:DPP_DB_KEYWORD::"
+          }
+
+        ],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "dnsServers": [],
+        "dnsSearchDomains": [],
+        "extraHosts": [],
+        "dockerSecurityOptions": [],
+        "dockerLabels": {},
+        "ulimits": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "uai2005370/dpp-internal/qa/outage_planning_service",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "outage_planning_service"
+          }
+        }
+      }
+    ],
+    "family": "uai2005370-outage_planning_service-taskdef-qa",
+    "taskRoleArn": "arn:aws:iam::598619258634:role/app/uai2005370/dpp-internal-ecs-tasks-service-qa",
+    "executionRoleArn": "arn:aws:iam::598619258634:role/app/uai2005370/dpp-internal-ecs-tasks-service-qa",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "cpu": "4096",
+    "memory": "8192"
+  }

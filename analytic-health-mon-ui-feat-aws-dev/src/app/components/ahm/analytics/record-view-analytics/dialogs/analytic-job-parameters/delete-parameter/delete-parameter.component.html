@@ -1,0 +1,75 @@
+<div fxLayout="row">
+  
+  <div fxFlex="100%">
+      <h1 mat-dialog-title class="page-header">Delete the following parameter?</h1>
+  </div>
+  
+</div>
+
+<mat-divider></mat-divider>
+
+
+<div mat-dialog-content>
+
+    <form [formGroup]="jobParameterFormGroup" class="jobParameterForm">
+        <div fxLayout="row">
+            <div fxFlex="50%">
+                <mat-form-field>
+                    <input formControlName="param_NAME" matInput placeholder="Parameter Name *">
+              </mat-form-field>
+            </div>
+            <div fxFlex="50%">
+                <mat-form-field>
+                    <input formControlName="param_VALUE" matInput placeholder="Parameter Value *">
+                    
+              </mat-form-field>
+            </div>
+        </div>
+        <div fxLayout="row">
+            <div fxFlex="50%">
+                  <mat-form-field>
+                    <mat-label>Select a parameter type</mat-label>
+                    <mat-select 
+                      formControlName="param_TYPE"
+                      required>
+                      <mat-option *ngFor="let param_type of interfaceFormatUtilityService.getJobParameterTypes()" [value]="param_type">
+                        {{  param_type  }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+            </div>
+            <div fxFlex="50%">
+                <mat-form-field>
+                  <mat-label>Sequence</mat-label>
+                  <mat-select 
+                    formControlName="param_SEQ"
+                    required>
+                    <mat-option *ngFor="let param_SEQ of interfaceFormatUtilityService.getJobParameterSEQ()" [value]="param_SEQ">
+                      {{  param_SEQ  }}
+                    </mat-option>
+                  </mat-select>
+  
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+        
+</div>
+<mat-divider style="margin-top: 10px;"></mat-divider>
+<div mat-dialog-actions>
+
+  <div fxLayout="row" style="width: 100%;">
+      
+      <div fxFlex="25%">
+          <div fxLayout="row">
+                  <button mat-raised-button style="text-align: center; padding: 0% !important" (click)="onNoClick()">
+                      Cancel
+                  </button>
+                  <button mat-raised-button color="warn" [mat-dialog-close]="fetchDeletedJobParameterURL()">
+                      Yes
+                  </button>
+          </div>
+      </div>
+  </div>
+
+</div>

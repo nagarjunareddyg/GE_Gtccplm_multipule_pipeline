@@ -1,0 +1,5 @@
+//loads docker builds pipeline library from jenkins.  
+@Library('lcpr-home-pipeline-scripts') _
+
+// call  pipeline method
+dockerBuildPipeline()

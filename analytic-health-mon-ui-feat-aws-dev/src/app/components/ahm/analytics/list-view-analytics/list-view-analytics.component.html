@@ -1,0 +1,230 @@
+
+
+<!-- Spin if waiting for data -->
+<div style="overflow:hidden !important;" *ngIf="!isJobsListLoaded()">
+  <h1 align="center">Loading...</h1>
+  <mat-spinner></mat-spinner>
+</div>
+  
+<div *ngIf="isJobsListLoaded()">
+  
+      <div fxLayout="row">
+              <mat-form-field class="mat-filter" style="padding: unset;">
+  
+                      <input [formControl] = "Search" matInput (keyup)="applyMatFilter($event.target.value)" placeholder="Search">
+              
+                      <!-- Add mat button for search icon -->
+                      <button mat-button matPrefix mat-icon-button>
+                          <i class="material-icons">
+                                  search
+                          </i>
+                      </button>
+              
+              </mat-form-field>
+  
+              <div class="spacer"></div>
+              
+              <div class="table-icons-container">
+                  <button mat-button title="Add" (click)="selectJobOnClick( analyticsDataService.fetchEmptyNewJobObject() )">
+                          <i class="material-icons table-icon-element">
+                                  add
+                          </i>
+                  </button>
+                  <button mat-button title="Refresh" (click)="refresh()">
+                          <i class="material-icons table-icon-element">
+                                  refresh
+                          </i>
+                  </button>
+      
+                  <button mat-button title="Download" (click)="exportAsExcel()">
+                          <i class="material-icons table-icon-element">
+                                  import_export
+                          </i>
+                  </button>
+      
+              </div>
+  
+              
+      </div>
+  
+      <!-- Scrollable table within panel -->
+      <div style="overflow-x: auto;">
+                            
+              <table mat-table [dataSource]="jobsList" class="mat-elevation-z8" style="width : 1900px; border-collapse: separate; display : table;" matSort>
+
+                          <!--- Note that these columns can be defined in any order.
+                              The actual rendered columns are set as a property on the row definition" -->
+
+
+                          <!-- job_ID -->
+                          <ng-container matColumnDef="job_ID">
+                              <mat-header-cell *matHeaderCellDef mat-sort-header><b> Job Id </b></mat-header-cell>
+                              <mat-cell *matCellDef="let element">
+                                  <a style="text-decoration: none; cursor: pointer;" (click)="selectJobOnClick(element); changeMatTabToRecordViewFunction();" > 
+                                    {{ element.job_ID }} 
+                                  </a>
+                              </mat-cell>
+                          </ng-container>
+
+                          <!-- job_NAME -->
+                          <ng-container matColumnDef="job_NAME">
+                              <mat-header-cell *matHeaderCellDef mat-sort-header><b> Job Name </b></mat-header-cell>
+                              <mat-cell *matCellDef="let element"> {{ element.job_NAME }} </mat-cell>
+                         </ng-container>
+
+                          <!-- job_DESC Column -->
+                          <ng-container matColumnDef="job_DESC">
+                              <mat-header-cell *matHeaderCellDef mat-sort-header><b> Job Description </b></mat-header-cell>
+                              <mat-cell *matCellDef="let element"> {{ element.job_DESC }} </mat-cell>
+                          </ng-container>
+                      
+                          <!-- Created BY Column -->
+                          <ng-container matColumnDef="created_BY">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 8px 0 0; width: 95px"><b> Created By </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element" style="padding: 0 8px 0 0; width: 95px">{{element.created_BY}}</mat-cell>
+                          </ng-container>
+                                      
+                          <!-- Created DATE Column -->
+                          <ng-container matColumnDef="created_DATE">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 8px 0 0; width: 95px"><b> Created Date </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element" style="padding: 0 8px 0 0; width: 95px">{{ element.created_DATE | date:'yyyy-MM-dd HH:mm:ss' }}  </mat-cell>
+                          </ng-container>
+                                      
+                          <!-- Exec_TYPE Column -->
+                          <ng-container matColumnDef="exec_TYPE">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 0 0 5px"><b> Exec Type </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element" style="padding: 0 0 0 5px">{{ interfaceFormatUtilityService.formatExecutionTypeStringToFrontend( element.exec_TYPE ) }}</mat-cell>
+                          </ng-container>
+                                      
+                          <!-- Executable Column -->
+                          <!-- <ng-container matColumnDef="executable">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Executable </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> {{ element.executable }}</mat-cell>
+                          </ng-container> -->
+                      
+                          <!-- Frequency Column -->
+                          <ng-container matColumnDef="frequency">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Frequ ency </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> {{ element.frequency }} </mat-cell>
+                          </ng-container>
+
+                          <!-- Frequency_UOM Column -->
+                          <ng-container matColumnDef="frequency_UOM">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Freq UOM </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> 
+                                        {{ interfaceFormatUtilityService.formatFrequencyUOM( element.frequency_UOM ) }}
+                                 </mat-cell>
+                          </ng-container>
+
+                          <!-- log_MAX_AGE -->
+                          <!-- <ng-container matColumnDef="log_MAX_AGE">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Log Max Age </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> {{ element.log_MAX_AGE }} </mat-cell>
+                          </ng-container> -->
+
+                          <!-- log_MIN_COUNT -->
+                          <!-- <ng-container matColumnDef="log_MIN_COUNT">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Log Min Count </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> {{ element.log_MIN_COUNT }} </mat-cell>
+                          </ng-container> -->
+
+                          <!-- modified_BY -->
+                          <ng-container matColumnDef="modified_BY">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 8px 0 0; width: 95px"><b> Modified By </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element" style="padding: 0 8px 0 0; width: 95px"> {{ element.modified_BY }} </mat-cell>
+                          </ng-container>
+
+                          <!-- modified_DATE -->
+                          <ng-container matColumnDef="modified_DATE">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 8px 0 0; width: 95px"><b> Modified Date </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element" style="padding: 0 8px 0 0; width: 95px">{{ element.modified_DATE | date:'yyyy-MM-dd HH:mm:ss' }}  </mat-cell>
+                          </ng-container>
+
+                          <!-- next_RUN -->
+                          <ng-container matColumnDef="next_RUN">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 8px 0 0; width: 95px"><b> Next Run </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element" style="padding: 0 8px 0 0; width: 95px">{{ element.next_RUN | date:'yyyy-MM-dd HH:mm:ss' }}  </mat-cell>
+                          </ng-container>
+
+                          <!-- oos_FLAG -->
+                          <ng-container matColumnDef="oos_FLAG">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Active (OOS)</b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element">
+                                        <div *ngIf="element.oos_FLAG === '+'" class="warning_cell">
+                                                &nbsp;
+                                        </div>
+                                        <div *ngIf="element.oos_FLAG === '-'" class="started_cell">
+                                                &nbsp;
+                                        </div>
+                                  </mat-cell>
+                          </ng-container>
+
+                          <!-- queue_ID -->
+                          <ng-container matColumnDef="queue_ID">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Queue ID </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> {{ element.queue_ID }} </mat-cell>
+                          </ng-container>
+
+                          <!-- run_AS -->
+                          <!-- <ng-container matColumnDef="run_AS">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Run As </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> {{ element.run_AS }} </mat-cell>
+                          </ng-container> -->
+
+                          <!-- run_DAY -->
+                          <ng-container matColumnDef="run_DAY">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 8px 0 0; width: 95px"><b> Run Day </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element" style="padding: 0 8px 0 0; width: 95px">
+                                        {{ interfaceFormatUtilityService.formatRunDayToFrontend( element.run_DAY ) }}
+                                  </mat-cell>
+                          </ng-container>
+
+                          <!-- run_ORDER -->
+                          <ng-container matColumnDef="run_ORDER">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Run Order </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element"> {{ element.run_ORDER }} </mat-cell>
+                          </ng-container>
+
+                          <!-- running_FLAG -->
+                          <ng-container matColumnDef="running_FLAG">
+                                  <mat-header-cell *matHeaderCellDef mat-sort-header><b> Running Flag </b></mat-header-cell>
+                                  <mat-cell *matCellDef="let element">
+                                                <div *ngIf="element.running_FLAG === '+'" class="{{ setTableElementIconStatus('+:running,-:not_running',element.running_FLAG) }}">
+                                                    <!-- RUNNING -->
+                                                    &nbsp;
+                                                </div>
+                                                <div *ngIf="element.running_FLAG === '-'">
+                                                    <!-- OFF -->
+                                                    &nbsp;
+                                                </div>
+                                  </mat-cell>
+                          </ng-container>
+
+                         <!-- Last run status -->
+                         <ng-container matColumnDef="last_RUN_STATUS">
+                                <mat-header-cell *matHeaderCellDef mat-sort-header><b> Last Run Status </b></mat-header-cell>
+                                <mat-cell *matCellDef="let element">
+                                        <div class="{{ setTableElementIconStatus('SUCCESS,FAIL,WARN',element.last_RUN_STATUS) }}">
+                                                <!-- {{ element.last_RUN_STATUS }} -->
+                                                &nbsp;
+                                        </div>
+                                </mat-cell>
+                         </ng-container>
+
+                         <!-- run as column -->
+                         <ng-container matColumnDef="max_START_DATE">
+                                <mat-header-cell *matHeaderCellDef mat-sort-header style="padding: 0 8px 0 0; width: 95px"><b> Last Run Start </b></mat-header-cell>
+                                <mat-cell *matCellDef="let element" style="padding: 0 8px 0 0; width: 95px"> 
+                                        
+                                        {{ element.max_START_DATE | date: 'yyyy-MM-dd HH:mm:ss' }} 
+
+                                </mat-cell>
+                          </ng-container>
+
+  
+                          <mat-header-row *matHeaderRowDef="jobTableColumns"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: jobTableColumns;"></mat-row>
+          </table>
+    </div>
+    <mat-paginator [pageSizeOptions]="[20,40,60,80,100]"></mat-paginator>
+  </div>

@@ -1,0 +1,10 @@
+UAI: uai3026525
+AppName: powerplmgtcc
+Env: dev1
+ImageName: 880379568593.dkr.ecr.us-east-1.amazonaws.com/uai3026525-powerplmgtcc-dev1-common:gtccplm
+JobName: stcskilldar
+
+ComputeEnvironment:
+  stack_output: uai3026525-powerplmgtcc-dev1-jobs-computeenvironment/Compute
+JobRole:
+  stack_output: uai3026525-powerplmgtcc-dev1-ecs-iam-batch-job-task/EcsTaskExeRoleArn

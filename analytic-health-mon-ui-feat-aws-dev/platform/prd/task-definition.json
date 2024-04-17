@@ -1,0 +1,115 @@
+{
+    "containerDefinitions": [
+      {
+        "name": "global-exp",
+        "image": "907050794246.dkr.ecr.us-east-1.amazonaws.com/uai1006473-gex-prd:gex-web-service",
+        "cpu": 0,
+        "links": [],
+        "portMappings": [
+          {
+            "containerPort": 8080,
+            "hostPort": 8080,
+            "protocol": "tcp"
+          }
+        ],
+        "essential": true,
+        "entryPoint": ["sh","-c","ls -lhtr /opt/jboss/wildfly/standalone/log/gex && /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -b 0.0.0.0"],
+        "command": [],
+        "environment": [
+          {
+            "name":"GEX_RDS_PORT",
+            "value":""
+          },
+          {
+            "name":"GEX_RDS_DBNAME",
+            "value":""
+          },
+          {
+            "name": "PLP_BASE_URL",
+            "value": "https://myproductlife.power.ge.com"
+          },
+          {
+            "name": "PLP_HOME_SERVICE_URL",
+            "value": "https://myproductlife.pw.ge.com"
+          },
+          {
+            "name": "PLP_PEDIGREE_SERVICE_URL",
+            "value": "http://partsPedigree.gex.prd:7218"
+          },
+          {
+            "name": "S3_BUCKET_NAME",
+            "value": "uai1006473-gex-prd"
+          },
+          {
+            "name":"JAVA_OPTS",
+            "value":"-Djboss.server.log.dir=/opt/jboss/wildfly/standalone/log -Dgex.service.url=http://localhost:8080 -Dgex.service.name=localhost -Dgex.scheduler.node=No -Djboss.as.management.blocking.timeout=1500 -Djava.net.preferIPv4Stack=true -Doracle.net.ssl_server_dn_match=FALSE -Doracle.net.ssl_cipher_suites=TLS_RSA_WITH_AES_256_CBC_SHA256"
+          }
+        ],
+        "secrets": [
+          {
+          "name": "GEX_RDS_HOST",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-db-ESGEX-WhBejg:host::"
+          },
+          {
+            "name": "GEX_RDS_USER",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-db-ESGEX-WhBejg:username::"
+          },
+          {
+            "name": "GEX_RDS_PASS",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-db-ESGEX-WhBejg:password::"
+          },
+          {
+            "name": "BOOMI_SERVICE_URL",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-integration-credential-rfLvhh:boomi.teradata.service.url::"
+          },
+          {
+            "name": "BOOMIDATAUSER",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-integration-credential-rfLvhh:BoomiTeradataUser::"
+          },
+          {
+            "name": "BOOMIDATAPWD",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-integration-credential-rfLvhh:BoomiTeradataPwd::"
+          },
+          {
+            "name": "BOOMI_IDM_SERVICE_URL",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-integration-credential-rfLvhh:BOOMI_IDM_SERVICE_URL::"
+          },
+          {
+            "name": "BOOMIIDMUSER",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-integration-credential-rfLvhh:BOOMIIDMUSER::"
+          },
+          {
+            "name": "BOOMIIDMPWD",
+            "valueFrom": "arn:aws:secretsmanager:us-east-1:907050794246:secret:/uai1006473/gex/prd-integration-credential-rfLvhh:BOOMIIDMPWD::"
+          }
+        ],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "dnsServers": [],
+        "dnsSearchDomains": [],
+        "extraHosts": [],
+        "dockerSecurityOptions": [],
+        "dockerLabels": {},
+        "ulimits": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "uai1006473/gex/prd/gex-web-service",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "gex-web-service"
+          }
+        }
+      }
+    ],
+    "family": "uai1006473-globalexp-taskdef-prd",
+    "taskRoleArn": "arn:aws:iam::907050794246:role/app/uai1006473/gex-ecs-tasks-web-prd",
+    "executionRoleArn": "arn:aws:iam::907050794246:role/app/uai1006473/gex-ecs-tasks-web-prd",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "cpu": "4096",
+    "memory": "8192"
+  }

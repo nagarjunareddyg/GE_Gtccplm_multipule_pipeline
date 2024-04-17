@@ -1,0 +1,56 @@
+stack_defaults:
+  tags:
+    uai: uai3026525
+    appname: powerplmgtcc
+    AppEnvCfgID: "1101009783"
+stacks:
+  us-east-1:
+
+    uai3026525-powerplmgtcc-dev1-jobs-computeenvironment:
+      template: computeenvironment.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-ucoprocessing:
+      template: ucoprocessing.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-spinner:
+      template: spinnerbuild.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-empis:
+      template: empis.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-mbeweb:
+      template: mbeweb.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-omm:
+      template: omm.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-personcheckouthistory:
+      template: personcheckouthistory.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-plmgtccfcsavailmonitor:
+      template: plmgtccfcsavailmonitor.yml
+      tags:
+        env: dev1    
+    uai3026525-powerplmgtcc-dev1-jobs-ucoreprocessing:
+      template: ucoreprocessing.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-stcerp:
+      template: stcerp.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-stcldap:
+      template: stcldap.yml
+      tags:
+        env: dev1
+    uai3026525-powerplmgtcc-dev1-jobs-stcskilldar:
+      template: stcskilldar.yml
+      tags:
+        env: dev1

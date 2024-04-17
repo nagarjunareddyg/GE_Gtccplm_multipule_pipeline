@@ -1,0 +1,55 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  ComputeEnvironment creation
+  
+Parameters:
+  UAI:
+    Type: String
+    Description: The UAI of the application being managed.
+    ConstraintDescription: The UAI must be valid, but specified as 'uai' followed by 7 digits.
+    AllowedPattern: '^uai[0-9]*$'
+    MinLength: 10
+    MaxLength: 10
+    Default: uai3026525
+  Env:
+    Type: String
+    Description: Env instance of the resource.
+    Default: tr
+    AllowedValues:
+    - dev1
+    - tr
+  AppName:
+    Type: String
+    MaxLength: 25
+    MinLength: 3
+    Description: Name of the application, keep to 15 characters or less
+    Default: powerplmgtcc
+  JobName:
+    Type: String
+    Description: batch job name
+  ScheduleJobSG:
+    Type: String
+    Description: security group for schedule jobs
+  CommonContainerSG:
+    Type: String
+    Description: common security group for db connection
+
+Resources:
+  ComputeEnvironment:
+    Type: AWS::Batch::ComputeEnvironment
+    Properties:
+      ComputeEnvironmentName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      Type: MANAGED
+      State: ENABLED
+      ComputeResources:
+        Type: FARGATE
+        MaxvCpus: 6
+        Subnets: [!ImportValue rb-az1, !ImportValue rb-az2]
+        SecurityGroupIds:  [!Ref ScheduleJobSG, !Ref CommonContainerSG]
+      ServiceRole: "arn:aws:iam::880379568593:role/app/uai3026525/powerplmgtcc-Service-Role-for-Batch"
+
+Outputs:
+  Compute:
+    Description: The Fargate Compute Environment
+    Value: !Ref ComputeEnvironment

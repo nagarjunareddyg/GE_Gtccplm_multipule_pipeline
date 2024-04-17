@@ -1,0 +1,168 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  MBEWEB processing schedule job
+  
+Parameters:
+  UAI:
+    Type: String
+    Description: The UAI of the application being managed.
+    ConstraintDescription: The UAI must be valid, but specified as 'uai' followed by 7 digits.
+    AllowedPattern: '^uai[0-9]*$'
+    MinLength: 10
+    MaxLength: 10
+    Default: uai3026525
+  Env:
+    Type: String
+    Description: Env instance of the resource.
+    Default: dev1
+    AllowedValues:
+    - dev1
+    - tr
+  AppName:
+    Type: String
+    MaxLength: 25
+    MinLength: 3
+    Description: Name of the application, keep to 15 characters or less
+    Default: powerplmgtcc
+  JobName:
+    Type: String
+    Description: mbeweb batch job name
+  JobRole:
+    Type: String
+    Description: role required to execute batch
+  ImageName:
+    Type: String
+    Description: CAS image name
+  ComputeEnvironment:
+    Type: String
+    Description: ARN of compute environment
+
+Resources:
+
+  BatchProcessingJobDefinition:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      Type: container
+      PropagateTags: true
+      JobDefinitionName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      ContainerProperties:
+        Image: !Sub ${ImageName}
+        FargatePlatformConfiguration:
+          PlatformVersion: LATEST
+        ResourceRequirements:
+          - Type: VCPU
+            Value: 4
+          - Type: MEMORY
+            Value: 10240
+        JobRoleArn:  !Sub ${JobRole}
+        ExecutionRoleArn:  !Sub ${JobRole}
+        MountPoints:
+          - SourceVolume: jobs-vol
+            ContainerPath: "/opt/software/enovia/mbeweb"
+          - SourceVolume: logs-vol
+            ContainerPath: "/opt/shared/log/web/apache/gtccplm/integrations"
+          - SourceVolume: 3dxlogs-vol
+            ContainerPath: /opt/software/R2018x/3DSpace/logs
+          - SourceVolume: "integrationconfig-vol"
+            ContainerPath: "/opt/software/enovia/integration"
+          - SourceVolume: "integrationsdata-vol"
+            ContainerPath: "/opt/shared/data/gtccplm/integrations"
+        Volumes:
+          - Name: jobs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-069542faa056b9ecb
+              RootDirectory: !Sub /opt/shared/data/configurations/GTCCPLM/batchjobs/${Env}/mbeweb
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: logs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-062a387e14c4c5624
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/jobs
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: 3dxlogs-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-062a387e14c4c5624
+              RootDirectory: !Sub /opt/shared/log/web/apache/gtccplm/${Env}/jobs/mbeweb
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: integrationconfig-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-069542faa056b9ecb
+              RootDirectory: !Sub /opt/shared/data/configurations/GTCCPLM/${Env}/integration
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+          - Name: integrationsdata-vol
+            EfsVolumeConfiguration:
+              FileSystemId: fs-069542faa056b9ecb
+              RootDirectory: !Sub /opt/shared/data/gtccplm/integrations/${Env}
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                Iam: ENABLED
+        Secrets:
+          - Name: ENOVIA_USER
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:Username::"
+          - Name: ENOVIA_KEY
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:Password::"
+          - Name: ConnectString
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:ConnectString1521::"
+          - Name: DSLicenseServer
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:DSLicenseServer::"
+          - Name: TNS_ENTRY
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/3DSpaceSecrets-cI476M:TNS_ENTRY::"
+          - Name: db_login
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/batchjobs-tgm7c9:batchjob_db_login::"
+          - Name: db_password
+            ValueFrom: !Sub "arn:aws:secretsmanager:us-east-1:880379568593:secret:/uai3026525/powerplmgtcc/${Env}/batchjobs-tgm7c9:batchjob_db_password::"
+        LogConfiguration:
+          LogDriver:  awslogs
+          Options:
+            awslogs-group: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+            awslogs-region: us-east-1
+            awslogs-stream-prefix: !Sub ${UAI}-${AppName}-${Env}-batchjob-logs
+        Command:
+        - bash
+        - gtccplm
+        - /opt/software/enovia/mbeweb/script/GEMBEWEBUSERSYNC.sh
+      PlatformCapabilities:
+      - FARGATE
+      Tags:
+        Service: Batch
+        Name: JobDefinitionTag
+        Expected: MergeTag
+
+  BatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      RetentionInDays: 7
+
+  BatchProcessingJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub "${UAI}-${AppName}-${Env}-${JobName}"
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+      - Order: 1
+        ComputeEnvironment:
+          Ref: ComputeEnvironment
+
+Outputs:
+
+  JobDefinition:
+    Description: The Fargate Job Definition
+    Value: !Ref BatchProcessingJobDefinition
+
+  JobQueue:
+    Description: The Fargate Job Queue
+    Value: !Ref BatchProcessingJobQueue
+
+  Compute:
+    Description: The Fargate Compute Environment
+    Value: !Ref ComputeEnvironment

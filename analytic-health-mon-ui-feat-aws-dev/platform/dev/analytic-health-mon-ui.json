@@ -1,0 +1,35 @@
+{
+    "cluster": "uai1008050-plpportal-dev",
+    "serviceName": "analytic-health-mon-ui-dev",
+    "taskDefinition": "uai1008050-analytic-health-mon-ui-taskdef-dev",
+    "loadBalancers": [{
+        "containerName": "analytic-health-mon-ui",
+        "containerPort": 9000,
+        "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:598619258634:targetgroup/uai10-Targe-1PMBIUS1PW1W2/8283549f2f536e97"
+    }],
+	"tags" : [
+       {
+          "key" : "env",
+          "value" : "dev"
+       },
+       {
+          "key" : "uai",
+          "value" : "uai1008050"
+       }
+    ],
+	"propagateTags": "SERVICE",    
+    "serviceRegistries": [ {
+			"registryArn": "arn:aws:servicediscovery:us-east-1:598619258634:service/srv-qutac22iltjse3xp"
+		}
+    ],
+    "launchType": "FARGATE",
+    "platformVersion": "LATEST",
+    "networkConfiguration": {
+       "awsvpcConfiguration": {
+          "assignPublicIp": "DISABLED",
+          "securityGroups": ["sg-00d6413d20bd7305b"],
+          "subnets":["subnet-076fbc33b8e7fc094","subnet-00a2cc8eb8b597505"]
+       }
+    },
+    "desiredCount": 1
+}

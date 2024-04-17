@@ -1,0 +1,85 @@
+<div fxLayout="row">
+  <div fxFlex="40%">
+      <h1 mat-dialog-title class="page-header">Add Parameter</h1>
+
+  </div>
+  <div fxFlex="60%"></div>
+  
+</div>
+
+<mat-divider></mat-divider>
+
+
+<div mat-dialog-content>
+
+    <form [formGroup]="jobParameterFormGroup" class="jobParameterForm">
+        <div fxLayout="row">
+            <div fxFlex="50%">
+                <mat-form-field>
+                    <input formControlName="param_NAME" matInput placeholder="Parameter Name *">
+                    <mat-error *ngIf="hasError('param_NAME', 'required')">parameter name is required</mat-error>
+                    <mat-error *ngIf="hasError('param_NAME', 'isParameterNameTaken')">parameter name is taken</mat-error>
+                </mat-form-field>
+            </div>
+            <div fxFlex="50%">
+              <mat-form-field>
+                <mat-label>Select a parameter type</mat-label>
+                <mat-select 
+                  formControlName="param_TYPE"
+                  required
+                  (selectionChange)="fetchCorrespondingValidator()">
+                  <mat-option *ngFor="let param_type of interfaceFormatUtilityService.getJobParameterTypes()" [value]="param_type">
+                    {{  param_type  }}
+                  </mat-option>
+                </mat-select>
+                
+                <mat-error *ngIf="hasError('param_TYPE', 'required')">parameter type is required</mat-error>
+              </mat-form-field>
+        </div>
+        <div fxFlex="50%">
+            <mat-form-field>
+              <mat-label>Sequence</mat-label>
+              <mat-select 
+                formControlName="param_SEQ"
+                required>
+                <mat-option *ngFor="let param_SEQ of paramSEQAvailableValues" [value]="param_SEQ">
+                  {{  param_SEQ  }}
+                </mat-option>
+              </mat-select>
+
+              <mat-error *ngIf="hasError('param_SEQ', 'required')">parameter sequence is required</mat-error>
+            </mat-form-field>
+        </div>
+        </div>
+        <div fxLayout="row">
+          <div fxFlex="50%">
+            <mat-form-field style="width: 200%;">
+                <input formControlName="param_VALUE" matInput placeholder="Parameter Value *">
+                <mat-error *ngIf="hasError('param_VALUE', 'required')">parameter value is required</mat-error>
+                <mat-error *ngIf="hasError('param_VALUE', 'isParameterInvalidNumber')">parameter must be a number</mat-error>
+                <mat-error *ngIf="hasError('param_VALUE', 'isParameterInvalidDate')">parameter date must be (mm/dd/yyyy)</mat-error>
+                
+          </mat-form-field>
+        </div>
+        </div>
+    </form>
+        
+</div>
+<mat-divider style="margin-top: 10px;"></mat-divider>
+<div mat-dialog-actions>
+
+  <div fxLayout="row" style="width: 100%;">
+      
+      <div fxFlex="25%">
+          <div fxLayout="row">
+                  <button mat-raised-button style="text-align: center; padding: 0% !important" (click)="onNoClick()">
+                      Cancel
+                  </button>
+                  <button mat-raised-button color="primary" [disabled]="!isThisParameterValid()" [mat-dialog-close]="fetchNewJobParameterFields()">
+                      Ok
+                  </button>
+          </div>
+      </div>
+  </div>
+
+</div>

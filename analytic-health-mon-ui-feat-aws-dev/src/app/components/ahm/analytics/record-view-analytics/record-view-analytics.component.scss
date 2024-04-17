@@ -1,0 +1,99 @@
+@import "./../../../../../styles/_mat-element-styles.scss";
+@import "./../../../../../styles/_table-icons.scss";
+@import "./../../../../../styles/_expansion-cell.scss";
+@import "./../../../../../styles/_expansion-row.scss";
+
+
+.record-view-container {
+    margin-top: 15px;
+}
+
+/* Table Icons */
+$icon-margin-left:4px;
+$icon-padding-left:28px;
+
+// Started cell.
+.started_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/arrow_right.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}
+
+.success_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/success24.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}
+.warning_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/warning24.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}
+.failure_cell{
+    margin-left: $icon-margin-left;
+    padding-left: $icon-padding-left;
+    background-image: url("../../../../../assets/images/failure24.png");
+    background-repeat:no-repeat;
+    background-position: left center;
+}
+
+.last-level-formfield {
+    width: 95%;
+}
+
+.job-description-textarea {
+    height: 25px;
+}
+
+.executable-textarea {
+    height: 25px;
+}
+
+// JOB PARAMETERS
+// analytic parameters
+.mat-column-param_NAME,
+.mat-column-param_TYPE,
+.mat-column-param_SEQ,
+// .mat-column-modified_BY,
+// .mat-column-modified_DATE,
+{
+    flex: 0 0 200px;
+}
+
+// analytic parameters value
+.mat-column-param_VALUE {
+    overflow: auto;
+}
+
+
+
+// JOB HISTORY
+// analytic job history message
+.mat-column-messages {
+    overflow: auto;
+    max-height: 400px;
+    flex: 0 0 200px;
+}
+
+.job-history-duration{
+    flex: 0 0 200px;
+}
+
+// Nested message history rows
+.mat-column-nested_created_DATE {
+    flex: 0 0 150px;
+}
+
+.mat-column-nested-status {
+    flex: 0 0 100px;
+}
+
+.mat-column-nested_message {
+    flex: 0 0 80% !important;
+}

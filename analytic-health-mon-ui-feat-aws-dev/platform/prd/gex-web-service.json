@@ -1,0 +1,35 @@
+{
+    "cluster": "uai1006473-gex-prd",
+    "serviceName": "uai1006473-gex-web-service-prd",
+    "taskDefinition": "uai1006473-globalexp-taskdef-prd",
+    "loadBalancers": [{
+        "containerName": "global-exp",
+        "containerPort": 8080,
+        "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:907050794246:targetgroup/uai10-Targe-I38YNA0Q1M46/6a45987fd1e1ab73"
+    }],
+	"tags" : [
+       {
+          "key" : "env",
+          "value" : "prd"
+       },
+       {
+          "key" : "uai",
+          "value" : "uai1006473"
+       }
+    ],
+	"propagateTags": "SERVICE",    
+    "serviceRegistries": [ {
+			"registryArn": "arn:aws:servicediscovery:us-east-1:907050794246:service/srv-4cxhwrzzjwavvdbe"
+		}
+    ],
+    "launchType": "FARGATE",
+    "platformVersion": "LATEST",
+    "networkConfiguration": {
+       "awsvpcConfiguration": {
+          "assignPublicIp": "DISABLED",
+          "securityGroups": ["sg-0f49b62719374888c"],
+          "subnets":["subnet-030c65e63a92fcb86","subnet-02f4ee7c272d7e664"]
+       }
+    },
+    "desiredCount": 1
+}

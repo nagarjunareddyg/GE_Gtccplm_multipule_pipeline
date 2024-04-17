@@ -1,0 +1,9 @@
+UAI: uai3026525
+AppName: powerplmgtcc
+Env: tr
+JobName: ComputeEnv
+
+ScheduleJobSG:
+  stack_output: uai3026525-powerplmgtcc-tr-sg/ScheduleJobSG
+CommonContainerSG:
+  stack_output: uai3026525-powerplmgtcc-tr-sg/CommonSGForContainer

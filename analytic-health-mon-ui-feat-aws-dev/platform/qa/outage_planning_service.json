@@ -1,0 +1,35 @@
+{
+    "cluster": "uai2005370-dpp-internal-qa",
+    "serviceName": "uai2005370-outage_planning_service-qa",
+    "taskDefinition": "uai2005370-outage_planning_service-taskdef-qa",
+    "loadBalancers": [{
+        "containerName": "outage_planning_service",
+        "containerPort": 8191,
+        "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:598619258634:targetgroup/uai20-Targe-G7EQP0MT2RT5/2cd61a3e62307b31"
+    }],
+	"tags" : [
+       {
+          "key" : "env",
+          "value" : "qa"
+       },
+       {
+          "key" : "uai",
+          "value" : "uai2005370"
+       }
+    ],
+	"propagateTags": "SERVICE",    
+    "serviceRegistries": [ {
+			"registryArn": "arn:aws:servicediscovery:us-east-1:598619258634:service/srv-ydbir3v2q6whmyyt"
+		}
+    ],
+    "launchType": "FARGATE",
+    "platformVersion": "LATEST",
+    "networkConfiguration": {
+       "awsvpcConfiguration": {
+          "assignPublicIp": "DISABLED",
+          "securityGroups": ["sg-08f8578b7f005fec1"],
+          "subnets":["subnet-076fbc33b8e7fc094","subnet-00a2cc8eb8b597505"]
+       }
+    },
+    "desiredCount": 1
+}
